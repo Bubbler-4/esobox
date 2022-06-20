@@ -1,0 +1,14 @@
+[package]
+name = "esobox"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Rust (re-)implementation of various esolangs"
+homepage = "https://github.com/Bubbler-4/esobox"
+repository = "https://github.com/Bubbler-4/esobox"
+documentation = "https://docs.rs/esobox"
+readme = "README.md"
+categories = ["compilers"]
+keywords = ["interpreters", "esolangs", "esoteric-languages"]
+
+[dependencies]
