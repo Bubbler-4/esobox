@@ -12,3 +12,4 @@ categories = ["compilers"]
 keywords = ["interpreters", "esolangs", "esoteric-languages"]
 
 [dependencies]
+thiserror = "1.0.31"
