@@ -9,7 +9,8 @@ repository = "https://github.com/Bubbler-4/esobox"
 documentation = "https://docs.rs/esobox"
 readme = "README.md"
 categories = ["compilers"]
-keywords = ["interpreters", "esolangs", "esoteric-languages"]
+keywords = ["interpreters", "esolangs", "esoteric-languages", "cli"]
 
 [dependencies]
 thiserror = "1.0.31"
+clap = { version = "3.2.6", features = ["cargo"] }
