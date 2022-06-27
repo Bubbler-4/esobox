@@ -1,3 +1,4 @@
 {
-  "image": "mcr.microsoft.com/vscode/devcontainers/rust:latest"
+  "image": "mcr.microsoft.com/vscode/devcontainers/rust:latest",
+  "onCreateCommand": "rustup update stable && rustup default stable && rustup component add rustfmt clippy"
 }
