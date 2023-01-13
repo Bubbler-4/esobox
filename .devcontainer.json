@@ -1,4 +1,11 @@
 {
   "image": "mcr.microsoft.com/vscode/devcontainers/rust:latest",
-  "onCreateCommand": "rustup update stable && rustup default stable && rustup component add rustfmt clippy"
+  "onCreateCommand": "rustup update stable && rustup default stable && rustup component add rustfmt clippy",
+  // Configure tool-specific properties.
+  "customizations": {
+    // Configure properties specific to VS Code.
+    "vscode": {
+      "extensions": ["rust-lang.rust-analyzer"]
+    }
+  }
 }

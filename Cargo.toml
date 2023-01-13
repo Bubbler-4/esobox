@@ -14,3 +14,6 @@ keywords = ["interpreters", "esolangs", "esoteric-languages", "cli"]
 [dependencies]
 thiserror = "1.0.31"
 clap = { version = "3.2.6", features = ["cargo"] }
+
+[dev-dependencies]
+test_bin = "0.4.0"
