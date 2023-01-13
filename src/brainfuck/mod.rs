@@ -1,6 +1,6 @@
 //! An implementation of [Brainfuck].
 //!
-//! This implementation uses a memory tape of fixed length (30000) with 8-bit wrapping cells.
+//! This implementation uses a cyclic memory tape of fixed length (65536) with 8-bit wrapping cells.
 //! On EOF, `,` command does not modify the current cell.
 //!
 //! Since optimizing Brainfuck is a well-studied area and there are various extremely
@@ -18,15 +18,12 @@ pub enum Error {
     /// Syntax error; the source code contains unmatched brackets.
     #[error("unmatched bracket `{0}`")]
     SyntaxError(char),
-    /// Runtime error; the pointer moved out of bounds of the tape (either to the left or to the right).
-    #[error("pointer out of bounds on `{0}`")]
-    PointerOutOfBoundsError(char),
     /// I/O error, which may occur during I/O operations.
     #[error("unexpected I/O error")]
     IoError(#[from] io::Error),
 }
 
-const MEMORY_SIZE: usize = 30000;
+const MEMORY_SIZE: usize = 65536;
 
 /// Brainfuck interpreter.
 pub fn run<I: BufRead, O: Write>(source: &str, input: &mut I, output: &mut O) -> Result<(), Error> {
@@ -41,14 +38,10 @@ pub fn run<I: BufRead, O: Write>(source: &str, input: &mut I, output: &mut O) ->
                 Cmd::Inc => memory[ptr] = memory[ptr].wrapping_add(1),
                 Cmd::Dec => memory[ptr] = memory[ptr].wrapping_sub(1),
                 Cmd::Left => {
-                    ptr = ptr
-                        .checked_sub(1)
-                        .ok_or(Error::PointerOutOfBoundsError('<'))?
+                    ptr = ptr.wrapping_sub(1) % MEMORY_SIZE;
                 }
                 Cmd::Right => {
-                    ptr = Some(ptr + 1)
-                        .filter(|&x| x < MEMORY_SIZE)
-                        .ok_or(Error::PointerOutOfBoundsError('>'))?
+                    ptr = (ptr + 1) % MEMORY_SIZE;
                 }
                 Cmd::Getc => {
                     if let Some(byte) = getc(input)? {
@@ -162,12 +155,7 @@ mod tests {
     #[test]
     fn test_printer_1() {
         // from https://codegolf.stackexchange.com/a/108062/78410
-        let code = "
-        >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-        >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-        >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-        >>>>>>>>
-        +[[-<]-[->]<-]<.<<<<.>>>>-.<<-.<.>>.<<<+++.>>>---.<++.";
+        let code = "+[[-<]-[->]<-]<.<<<<.>>>>-.<<-.<.>>.<<<+++.>>>---.<++.";
         let mut stdin = BufReader::new(&b""[..]);
         let mut stdout: Vec<u8> = vec![];
         let res = run(code, &mut stdin, &mut stdout);
@@ -189,7 +177,7 @@ mod tests {
     #[test]
     fn test_io_1() {
         // from https://codegolf.stackexchange.com/a/210478/78410
-        let code = ">+[,>++++[<-------->-]<]>++++[<++++++++>-]<[>,]++++[<-------->-]<[[-]++++[<-------->-]<]<[<]>>[.>]";
+        let code = "+[,>++++[<-------->-]<]>++++[<++++++++>-]<[>,]++++[<-------->-]<[[-]++++[<-------->-]<]<[<]>>[.>]";
         let testcases = [
             &b"Samantha Vee Hills"[..],
             b"Bob Dillinger",
@@ -209,25 +197,6 @@ mod tests {
             let mut stdout: Vec<u8> = vec![];
             let res = run(code, &mut stdin, &mut stdout);
             assert!(res.is_ok());
-            assert_eq!(stdout, expected);
-        }
-    }
-
-    #[test]
-    fn test_io_2() {
-        // from https://codegolf.stackexchange.com/a/172401/78410
-        let code = ">>>>>>>-[-[-<]>>+<]>-<<+[[[-]<,[->+>+<<]>[-<+>]>>[-<->>+<]<]<<[>>+<<[-]]<[<]>[[.>]<[<]>[-]>]>>>>.<<]";
-        let testcases = [&b"laser bat "[..], b"on the topic of existence "];
-        let outputs = [
-            &b"laserasersererr batatt "[..],
-            b"onn thehee topicopicpicicc off existencexistenceistencestencetenceencencecee ",
-        ];
-        for (testcase, expected) in testcases.into_iter().zip(outputs) {
-            let mut stdin = BufReader::new(testcase);
-            let mut stdout: Vec<u8> = vec![];
-            let res = run(code, &mut stdin, &mut stdout);
-            dbg!(&res);
-            assert!(matches!(res, Err(Error::PointerOutOfBoundsError('>'))));
             assert_eq!(stdout, expected);
         }
     }
