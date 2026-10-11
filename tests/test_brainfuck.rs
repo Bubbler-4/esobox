@@ -1,7 +1,7 @@
 use std::process::{Command, Stdio};
 
 fn esobox() -> Command {
-    test_bin::get_test_bin("esobox")
+    Command::new(env!("CARGO_BIN_EXE_esobox"))
 }
 
 #[test]
